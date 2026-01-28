@@ -3,11 +3,6 @@ from ultralytics import solutions
 
 
 def count_sheep_in_video(video_path: str) -> int:
-    """
-    Считает количество овец, пересекших линию входа в загон.
-    Работает для сценария: овцы заходят внутрь через узкий проход.
-    """
-
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise ValueError("Ошибка открытия видео")
@@ -16,7 +11,7 @@ def count_sheep_in_video(video_path: str) -> int:
     region_points = [(200, 400), (1000, 400)]
 
     counter = solutions.ObjectCounter(
-        show=False,             # Не показываем окно (важно для сервера)
+        show=True,             # Не показываем окно (важно для сервера)
         region=region_points,
         model="yolov8n.pt",
         classes=[18],           # 18 = sheep
@@ -33,4 +28,5 @@ def count_sheep_in_video(video_path: str) -> int:
 
     # Сколько овец вошло
     total_sheep = counter.in_count
+    print(total_sheep)
     return total_sheep

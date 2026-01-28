@@ -4,3 +4,5 @@ ultralytics
 pydantic
 python-multipart
 opencv-python
+pillow
+numpy
