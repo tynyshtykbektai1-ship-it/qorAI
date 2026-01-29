@@ -6,3 +6,4 @@ python-multipart
 opencv-python
 pillow
 numpy
+torch

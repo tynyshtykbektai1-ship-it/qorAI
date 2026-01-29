@@ -96,6 +96,6 @@ class BovineHealthAnalyzer:
         return {
             "is_valid": True,
             "status": "Mastitis Detected" if prob >= 0.5 else "Healthy",
-            "score": round(prob, 4),
+            "score": round(prob, 3),
             "severity": "High" if prob > 0.75 else "Moderate" if prob > 0.5 else "None"
         }
