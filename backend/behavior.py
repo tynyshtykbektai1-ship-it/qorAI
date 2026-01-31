@@ -55,7 +55,7 @@ while cap.isOpened():
                 status = "LOW ACTIVITY!"
                 color = (0, 0, 255) # Красный
 
-            # Отрисовка
+         
             cv2.rectangle(frame, (int(x-w/2), int(y-h/2)), (int(x+w/2), int(y+h/2)), color, 2)
             cv2.putText(frame, f"ID: {track_id} | {status}", (int(x-w/2), int(y-h/2)-10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)

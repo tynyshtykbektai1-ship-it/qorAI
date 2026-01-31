@@ -2,8 +2,8 @@ from ultralytics import YOLO
 import io
 from PIL import Image
 
-class Cow_disease_Detector:
-    def __init__(self, model_path='best_cow-disease.pt'):
+class Meat_fresh_Detector:
+    def __init__(self, model_path='best_meat_fresh.pt'):
         try:
             self.model = YOLO(model_path)
             print("Model loaded successfully.")
@@ -15,10 +15,10 @@ class Cow_disease_Detector:
 
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         
-    
+       
         results = self.model(image)
         
-
+        
         probs = results[0].probs
         class_id = int(probs.top1)
         confidence = round(float(probs.top1conf), 3)

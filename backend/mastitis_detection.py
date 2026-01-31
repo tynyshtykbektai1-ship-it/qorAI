@@ -4,10 +4,6 @@ from torchvision import transforms
 from PIL import Image
 import timm
 
-# ==========================================
-# 1. Архитектуры моделей
-# ==========================================
-
 class EnhancedTeatDetector(nn.Module):
     def __init__(self, backbone_name='efficientnet_b0'):
         super(EnhancedTeatDetector, self).__init__()
@@ -42,26 +38,21 @@ class CNNModel(nn.Module):
         x = self.relu(self.fc1(x))
         return self.fc2(x)
 
-# ==========================================
-# 2. Основной класс для импорта
-# ==========================================
 
 class BovineHealthAnalyzer:
     def __init__(self, teat_weights, mastitis_weights, device=None):
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        # Инициализация модели сосков
+    # Инициализация модели сосков
         self.teat_model = EnhancedTeatDetector().to(self.device)
         t_checkpoint = torch.load(teat_weights, map_location=self.device)
         self.teat_model.load_state_dict(t_checkpoint['model_state_dict'])
         self.teat_model.eval()
 
-        # Инициализация модели мастита
         self.mastitis_model = CNNModel().to(self.device)
         self.mastitis_model.load_state_dict(torch.load(mastitis_weights, map_location=self.device))
         self.mastitis_model.eval()
 
-        # Трансформы
         self.teat_tf = transforms.Compose([
             transforms.Resize((256, 256)),
             transforms.ToTensor(),
@@ -74,11 +65,6 @@ class BovineHealthAnalyzer:
         ])
 
     def predict(self, pil_image):
-        """
-        Принимает объект PIL.Image.
-        Возвращает: dict с результатами.
-        """
-        # Проверка на сосок
         t_input = self.teat_tf(pil_image).unsqueeze(0).to(self.device)
         with torch.no_grad():
             t_out = self.teat_model(t_input)
@@ -87,7 +73,6 @@ class BovineHealthAnalyzer:
         if not is_teat:
             return {"is_valid": False, "status": "Not a teat image", "score": 0.0}
 
-        # Диагностика мастита
         m_input = self.mastitis_tf(pil_image).unsqueeze(0).to(self.device)
         with torch.no_grad():
             m_out = self.mastitis_model(m_input)
