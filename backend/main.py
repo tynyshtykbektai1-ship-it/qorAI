@@ -9,6 +9,11 @@ from meat_fresh import Meat_fresh_Detector
 import asyncio
 from livestockcount import AnimalCounter
 import os
+import tempfile
+from milk_yield_prediction import MilkYieldPredictor
+
+
+
 
 app = FastAPI()
 app.add_middleware(
@@ -35,9 +40,14 @@ analyzer_fresh = Meat_fresh_Detector(
 animal_counter = AnimalCounter(
     model_path='models/yolov8n.pt',
     classes=['sheep','cow', 'horse', 'goat'],
-    conf=0.5,
-    save=False
+    conf=0.5
 )
+
+milk_yield = MilkYieldPredictor(
+    model_path='models/milk_yield_model.h5'
+)
+
+
 
 
 class SensorData(BaseModel):
@@ -54,19 +64,50 @@ def root():
     return {"message": "Hello World"}
 
 
+
+
+
+
+
 @app.post("/livestock_count")
 async def count_animals_endpoint(file: UploadFile = File(...)):
-    tmp_path = f"/tmp/{file.filename}"
-    with open(tmp_path, "wb") as f:
-        f.write(await file.read())
-    counts = await asyncio.to_thread(animal_counter.count, tmp_path)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_file:
+        tmp_path = tmp_file.name
+        tmp_file.write(await file.read())
+    counts = await asyncio.to_thread(animal_counter.count, tmp_path, save=False)
     os.remove(tmp_path) 
     return {"counts": counts}
+
+
+
+@app.post("/milk_yield_prediction")
+async def predict_milk_yield(file: UploadFile = File(...)):
+    file_bytes = await file.read()
+    result = milk_yield.predict_milk_yield(file_bytes)
+    return result
+
+
+
+
+
+
+
 
 
 @app.post("/sensorsdata")
 async def predict(data: SensorData):
     return {"sensordata": data}
+
+
+
+
+
+
+
+
+
+
+
 
 @app.post("/mastitis_detection")
 async def predict_mastitis(file: UploadFile = File(...)):
@@ -76,12 +117,33 @@ async def predict_mastitis(file: UploadFile = File(...)):
     print(f"Diagnosis: {result2['status']}, Confidence: {result2['score']}")
     return {"mastitis_detection": result2["status"], "confidence": result2["score"]}
 
+
+
+
+
+
+
+
+
+
+
 @app.post('/cow_disease_detection')
 async def predict_cow_disease(file: UploadFile = File(...)):
     image_bytes = await file.read()
     class_name, confidence = analyzer_cow_disease.predict(image_bytes)
     print(f"Disease: {class_name}, Confidence: {confidence}")
     return {"cow_disease": class_name, "confidence": confidence}
+
+
+
+
+
+
+
+
+
+
+
 
 @app.post('/meat_fresh_detection')
 async def predict_meat_fresh(file: UploadFile = File(...)):
